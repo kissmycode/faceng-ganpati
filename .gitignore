@@ -1,0 +1,19 @@
+.DS_Store
+# Arduino IDE build and temporary files
+*.tmp
+*.elf
+*.bin
+*.hex
+*.lst
+*.map
+*.sym
+*.eep
+*.lss
+*.o
+*.S
+*.d
+build/
+arduino_build_*
+Libraries/
+# Local credential files
+credentials.h

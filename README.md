@@ -7,21 +7,21 @@ The controller can communicate via **Wi-Fi (UDP)** to a companion Python script 
 ## ✨ Features
 
 * **Modular Control:** Manually select and operate individual modules.
-* [cite_start]**7-Segment Display:** Shows the currently selected module number for clear user feedback[cite: 5].
-* [cite_start]**Automation Mode:** A one-touch automated sequence that controls all physical modules in a predefined order[cite: 2].
-* [cite_start]**Communication:** Uses an ESP8266 for Wi-Fi (UDP) commands to a remote computer[cite: 2, 3].
+* **7-Segment Display:** Shows the currently selected module number for clear user feedback.
+* **Automation Mode:** A one-touch automated sequence that controls all physical modules in a predefined order.
+* **Communication:** Uses an ESP8266 for Wi-Fi (UDP) commands to a remote computer.
 * **Remote Music Control:** Triggers playback of a specific track in Apple Music on a Mac.
-* [cite_start]**Debounced Inputs:** All user inputs (buttons and limit switches) are debounced for reliable operation[cite: 2].
+* **Debounced Inputs:** All user inputs (buttons and limit switches) are debounced for reliable operation.
 
 ## ⚙️ Hardware Requirements
 
 * **Microcontroller:** An Arduino Mega 2560 (or a compatible board with enough I/O pins).
 * **Communication Module:**
-    * [cite_start]**For Wi-Fi:** An ESP8266 module (like ESP-01) connected to `Serial3`[cite: 2].
-* [cite_start]**Display:** One 7-segment display[cite: 5].
+    * **For Wi-Fi:** An ESP8266 module (like ESP-01) connected to `Serial3`.
+* **Display:** One 7-segment display.
 * **Actuators & Relays:** Relay modules to control the bell, spinning wheel motor, cart motor, and balloon pump/valve.
-* [cite_start]**User Input:** 3 x Push Buttons (Mode Select, Start/Forward, Stop/Reverse)[cite: 1].
-* [cite_start]**Sensors:** 2 x Limit Switches (for cart and balloon)[cite: 1].
+* **User Input:** 3 x Push Buttons (Mode Select, Start/Forward, Stop/Reverse).
+* **Sensors:** 2 x Limit Switches (for cart and balloon).
 * **Computer:** A Mac running macOS to execute the companion script for music playback.
 
 ## 📚 Software Dependencies
@@ -38,9 +38,9 @@ The controller can communicate via **Wi-Fi (UDP)** to a companion Python script 
 
 The project includes a Python script to receive commands from the Arduino and control Apple Music on a Mac.
 
-* [cite_start]`wifi-reader.py`: Listens for UDP packets over Wi-Fi on port `8888`[cite: 4]. This is the default method used by the automation sequence.
+* `wifi-reader.py`: Listens for UDP packets over Wi-Fi on port `8888`. This is the default method used by the automation sequence.
 
-[cite_start]The script listens for the commands `play_aarti` and `stop_aarti` to control a specific track in the Music app[cite: 3, 4].
+The script listens for the commands `play_aarti` and `stop_aarti` to control a specific track in the Music app.
 
 ## 🚀 Installation & Running
 
@@ -51,7 +51,7 @@ The project includes a Python script to receive commands from the Arduino and co
     * Create a new file named `credentials.h` by copying the `credentials.h.example` template.
     * Open your new `credentials.h` file and replace the placeholder values with your actual Wi-Fi SSID and password.
     * The `credentials.h` file is intentionally ignored by Git (via `.gitignore`) and should never be committed.
-3.  [cite_start]**Network Target:** In `FacengGanpatiWiFiUtils.cpp`, update the target IP address to match the IP of the Mac running the `wifi-reader.py` script[cite: 6].
+3.  **Network Target:** In `FacengGanpatiWiFiUtils.cpp`, update the target IP address to match the IP of the Mac running the `wifi-reader.py` script.
     ```cpp
     const char* macbook_ip = "192.168.86.249"; // <-- CHANGE THIS
     ```
@@ -64,18 +64,18 @@ The project includes a Python script to receive commands from the Arduino and co
     pip install -r requirements.txt
     ```
 2.  **Configure the Script:**
-    * [cite_start]**Apple Music:** Ensure you have a track named exactly **"Sukhkarta_aarti"** in your Apple Music library, as this name is hardcoded in both Python scripts[cite: 3, 4].
+    * **Apple Music:** Ensure you have a track named exactly **"Sukhkarta_aarti"** in your Apple Music library, as this name is hardcoded in both Python scripts.
 3.  **Run the Script:**
     * In your terminal, run the script that matches your hardware setup.
     * **For Wi-Fi:**
         ```shell
         python3 wifi-reader.py
         ```
-    * [cite_start]The script will print a confirmation message once it's running and connected[cite: 3, 4]. Keep the terminal window open while you use the Arduino controller.
+    * The script will print a confirmation message once it's running and connected. Keep the terminal window open while you use the Arduino controller.
 
 ## 🕹️ How to Use
 
-1.  [cite_start]**Power On:** The system will boot, connect to Wi-Fi (if configured), and display `A` on the 7-segment display to indicate it's ready[cite: 2].
+1.  **Power On:** The system will boot, connect to Wi-Fi (if configured), and display `A` on the 7-segment display to indicate it's ready.
 2.  **Start Companion Script:** Run the Wi-Fi script on your Mac.
-3.  [cite_start]**Select a Module:** Press the "Mode Select" button (connected to pin 2) to cycle through the modules: `0` (Bell), `1` (Spin Wheel), `2` (Cart), `3` (Balloon), `4` (Automation)[cite: 2].
-4.  **Control the Module:** Use the "Start" and "Stop" buttons to operate the selected module. [cite_start]When **Automation** is selected and started, the Arduino will send the `"play_aarti"` command at the appropriate step in the sequence[cite: 2].
+3.  **Select a Module:** Press the "Mode Select" button (connected to pin 2) to cycle through the modules: `0` (Bell), `1` (Spin Wheel), `2` (Cart), `3` (Balloon), `4` (Automation).
+4.  **Control the Module:** Use the "Start" and "Stop" buttons to operate the selected module. When **Automation** is selected and started, the Arduino will send the `"play_aarti"` command at the appropriate step in the sequence.

@@ -16,7 +16,6 @@
 uint8_t currentModule = NOOP_MODULE;
 volatile uint8_t lastModule = NOOP_MODULE;
 volatile uint8_t selectedModule = NOOP_MODULE;
-const uint8_t intrPin = 2;
 volatile unsigned long lastInterruptTime = 0;
 const unsigned long intrDebounceDelay = 100; // milliseconds
 // Interrupt pin map for Megsa 2560
@@ -85,10 +84,10 @@ void setup() {
   ESP_SERIAL.begin(115200);
 
   // Setup interrupt for mode-switch button
-  pinMode(intrPin, INPUT);
+  pinMode(intrPin, INPUT_PULLUP);
 
   // Attach the ISR for mode-switch
-  attachInterrupt(digitalPinToInterrupt(intrPin), handleModuleIntr, RISING);
+  attachInterrupt(digitalPinToInterrupt(intrPin), handleModuleIntr, LOW);
 
   // Setup 7-seg display o/p pins
   for (int i = 0; i < numSegmentsForDigits; i++) {
@@ -97,6 +96,10 @@ void setup() {
 
   // Setup relay o/p pins
   for (int i = 0; i < numRelayControlPins; i++) {
+    // Since relay input is active low, by default
+    // our pins should be high. Hence first set to INPUT_PULLUP and then to OUTPUT
+    // This ensures that default output remains HIGH
+    pinMode(relayControlPins[i], INPUT_PULLUP);
     pinMode(relayControlPins[i], OUTPUT);
   }
 
@@ -122,6 +125,7 @@ void setup() {
   digitalWrite(bootedOkLEDPin, HIGH);
   // Show on 7-seg display that we are ready to start
   writeNumberTo7SegDisplay(10);
+  DEBUG_PRINT("Chip booted and setup done\n");
 }
 
 
@@ -264,7 +268,7 @@ void loop() {
     }
     case Modules::Automation: {
      /*
-      *.  The prevAutomationPinState helps us continue the Autmation sequence in back to back loop() calls.
+      *.  The prevAutomationPinState helps us continue the Automation sequence in back to back loop() calls.
       *   InputPin  AutomationState Action
       *   0         False/Off       Turn-on
       *   1         True/On         Continue turn-on sequence
@@ -279,41 +283,56 @@ void loop() {
       bool doNothing        = (HIGH == currAutomationPinState && !ModuleAutomationState.state);
 
       if (turnOnSequence || continueSequence) {
-        DEBUG_PRINT("AutomationState before %u CurrPinState %u", ModuleAutomationState.state, currAutomationPinState);
-        ModuleAutomationState.state = true;
-        DEBUG_PRINT("Starting modules in automation\n");
+        if (turnOnSequence) {
+          // Ensure all modules are off
+          stopAllPhysicalModules();
+          DEBUG_PRINT("AutomationState before %u CurrPinState %u", ModuleAutomationState.state, currAutomationPinState);
+          ModuleAutomationState.state = true;
+          DEBUG_PRINT("Starting modules in automation\n");
+        }
 
         // 0. Bell
-        if (!ModuleBellState.state) { startModule(Modules::Bell); }
+        if (!ModuleBellState.state) {
+          startModule(Modules::Bell);
+          DEBUG_PRINT("Bell module started. Current state of module %u\n", ModuleBellState.state);
+        }
 
         // 1. Balloon
         bool isLimitSwitchBalloonHit = (LOW == debouncedDigitalRead(balloonTopLimitSwitchInputPin, pushButtonDebounceDelayMs));
         if (ModuleBalloonState.state == ModuleBalloonState.PressureHold && !isLimitSwitchBalloonHit) {
           startModule(Modules::Balloon, true);
+          DEBUG_PRINT("Balloon module started. Current state of module %u\n", ModuleBalloonState.state);
         }
         // We can proceed only if balloon has hit limit switch
         if (isLimitSwitchBalloonHit) {
           // Stop the balloon inflation, i.e. hold its pressure
-          stopModule(Modules::Balloon);
+          if (ModuleBalloonState.state != ModuleBalloonState.PressureHold) {
+            stopModule(Modules::Balloon);
+          }
 
           // 2. SpinWheel
           if (!ModuleSpinWheelState.state) {
             startModule(Modules::SpinWheel);
+            DEBUG_PRINT("Spinwheel module started. Current state of module %u\n", ModuleSpinWheelState.state);
           }
 
           // 3. Cart
           bool isLimitSwitchCartHit = (LOW == debouncedDigitalRead(cartLimitSwitchInputPin, pushButtonDebounceDelayMs));
           if (ModuleCartState.state == ModuleCartState.Stopped && !isLimitSwitchCartHit) {
             startModule(Modules::Cart, true);
+            DEBUG_PRINT("Cart module started. Current state of module %u\n", ModuleCartState.state);
           }
           // If limit switch is hit, cart is in position. Start music then.
           if (isLimitSwitchCartHit) {
             // Stop cart
-            stopModule(Modules::Cart);
+            if (ModuleCartState.state != ModuleCartState.Stopped) {
+              stopModule(Modules::Cart);
+            }
 
             // 4. Start Music
             if (!ModuleMusicState.state) {
               startModule(Modules::Music);
+              DEBUG_PRINT("Music module started. Current state of module %u\n", ModuleMusicState.state);
             }
           }
         }
@@ -322,6 +341,7 @@ void loop() {
         DEBUG_PRINT("Stoping modules in automation\n");
         ModuleAutomationState.state = false;
         stopAllPhysicalModules();
+        DEBUG_PRINT("Automation stopped\n");
       } else {
         // Do nothing
       }

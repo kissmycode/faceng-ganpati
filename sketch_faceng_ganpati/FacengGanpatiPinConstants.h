@@ -7,16 +7,17 @@
 //
 /*****************************************************************************************/
 
-constexpr uint8_t bellRelayControlPin = 42;
-constexpr uint8_t spinWheenRelayControlPin = 41;
-constexpr uint8_t cartForwardRelayControlPin = 40;
-constexpr uint8_t cartReverseRelayControlPin = 39;
-constexpr uint8_t balloonInflateRelayControlPin = 38;
-constexpr uint8_t balloonDeflateRelayControlPin = 37;
-constexpr uint8_t automationLEDPin = 36;
-constexpr uint8_t bootedOkLEDPin = 35;
-constexpr uint8_t wifiOkLEDPin = 34;
+constexpr uint8_t bellRelayControlPin = 43;
+constexpr uint8_t spinWheenRelayControlPin = 42;
+constexpr uint8_t cartForwardRelayControlPin = 41;
+constexpr uint8_t cartReverseRelayControlPin = 40;
+constexpr uint8_t balloonInflateRelayControlPin = 39;
+constexpr uint8_t balloonDeflateRelayControlPin = 38;
+constexpr uint8_t automationLEDPin = 37;
+constexpr uint8_t bootedOkLEDPin = 36;
+constexpr uint8_t wifiOkLEDPin = 35;
 // Various input signals for Arduino
+constexpr uint8_t intrPin = 2;
 constexpr uint8_t startModuleControlPin = 3; // Push to start/forward. Release to stop
 constexpr uint8_t stopModuleControlPin = 4;  // Push to reverse. Release to stop. No-op for binary module
 constexpr uint8_t cartLimitSwitchInputPin = 31; // Stop Cart on reaching this

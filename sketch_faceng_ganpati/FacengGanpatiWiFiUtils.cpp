@@ -9,11 +9,58 @@ int status = WL_IDLE_STATUS;
 
 
 // Local IP address and a port to listen on
-const char* macbook_ip = "192.168.86.249"; // <-- IMPORTANT: Fetch this if WiFi changes
+const char* macbook_ip = "192.168.31.152"; // <-- IMPORTANT: Fetch this if WiFi changes
 const int macbook_port = 8888;
 
 // Create an instance of the UDP client
 WiFiUdpSender Udp;
+
+void printMacAddress(byte mac[]) {
+  for (int i = 0; i < 6; i++) {
+    if (i > 0) {
+      DEBUG_PRINT(":");
+    }
+    if (mac[i] < 16) {
+      DEBUG_PRINT("0");
+    }
+    DEBUG_PRINT("%u", mac[i]);
+  }
+  DEBUG_PRINT("\n");
+}
+
+void listNetworks() {
+  // scan for nearby networks:
+ DEBUG_PRINT("** Scan Networks **");
+  int numSsid = WiFi.scanNetworks();
+  if (numSsid == -1)
+  {
+    DEBUG_PRINT("Couldn't get a WiFi connection");
+    while (true);
+  }
+
+  // print the list of networks seen:
+  DEBUG_PRINT("number of available networks: ");
+  DEBUG_PRINT("%d", numSsid);
+
+  // print the network number and name for each network found:
+  for (int thisNet = 0; thisNet < numSsid; thisNet++) {
+    DEBUG_PRINT("%d", thisNet + 1);
+    DEBUG_PRINT(") ");
+    DEBUG_PRINT("Signal: ");
+    DEBUG_PRINT("%d", WiFi.RSSI(thisNet));
+    DEBUG_PRINT(" dBm");
+    DEBUG_PRINT("\tChannel: ");
+    DEBUG_PRINT("%d", WiFi.channel(thisNet));
+    byte bssid[6];
+    DEBUG_PRINT("\t\tBSSID: ");
+    printMacAddress(WiFi.BSSID(thisNet, bssid));
+    DEBUG_PRINT("\tEncryption: ");
+    DEBUG_PRINT("\t\tSSID: ");
+    Serial.println(WiFi.SSID(thisNet));
+    DEBUG_PRINT("\n")
+  }
+  DEBUG_PRINT("\n");
+}
 
 /**
  * Initializes the ESP8266 module and connects to the Wi-Fi network.
@@ -30,15 +77,16 @@ bool wifiInit() {
     return false;
   }
 
+  listNetworks();
   // Attempt to connect to Wi-Fi network with retries
   DEBUG_PRINT("Attempting to connect to SSID: %s\n", ssid);
-  for (int i = 0; i < 5; i++) { // Retry up to 5 times
+  for (int i = 0; i < 5; i++) {
     status = WiFi.begin(ssid, password);
     if (status == WL_CONNECTED) {
-      break; // Exit loop on success
+      break;
     }
-    DEBUG_PRINT("Connection failed, retrying...\n");
-    delay(2000);
+    DEBUG_PRINT("Connection failed %d, retrying...\n", status);
+    delay(5000);
   }
 
   if (status != WL_CONNECTED) {

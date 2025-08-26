@@ -13,28 +13,29 @@ _ModuleMusicState ModuleMusicState;
 _ModuleAutomationState ModuleAutomationState;
 
 void startModule(Modules mod, bool moveInPositiveDir) {
+  // All relay pins are active low.
   switch (mod) {
     case Modules::Bell: {
       DEBUG_PRINT("Bell module started\n");
       ModuleBellState.state = true;
-      digitalWrite(bellRelayControlPin, HIGH);
+      digitalWrite(bellRelayControlPin, LOW);
       break;
     }
     case Modules::SpinWheel: {
       DEBUG_PRINT("SpinWheel module started\n");
       ModuleSpinWheelState.state = true;
-      digitalWrite(spinWheenRelayControlPin, HIGH);
+      digitalWrite(spinWheenRelayControlPin, LOW);
       break;
     }
     case Modules::Cart: {
       DEBUG_PRINT("Cart module started");
       if (moveInPositiveDir) {
         ModuleCartState.state = ModuleCartState.Forward;
-        digitalWrite(cartForwardRelayControlPin, HIGH);
+        digitalWrite(cartForwardRelayControlPin, LOW);
         DEBUG_PRINT(" foward\n");
       } else {
         ModuleCartState.state = ModuleCartState.Reverse;
-        digitalWrite(cartReverseRelayControlPin, HIGH);
+        digitalWrite(cartReverseRelayControlPin, LOW);
         DEBUG_PRINT(" reverse\n");
       }
       break;
@@ -43,11 +44,11 @@ void startModule(Modules mod, bool moveInPositiveDir) {
       DEBUG_PRINT("Balloon module started");
       if (moveInPositiveDir) {
         ModuleBalloonState.state = ModuleBalloonState.Inflate;
-        digitalWrite(balloonInflateRelayControlPin, HIGH);
+        digitalWrite(balloonInflateRelayControlPin, LOW);
         DEBUG_PRINT(" inflation\n");
       } else {
         ModuleBalloonState.state = ModuleBalloonState.Deflate;
-        digitalWrite(balloonDeflateRelayControlPin, HIGH);
+        digitalWrite(balloonDeflateRelayControlPin, LOW);
         DEBUG_PRINT(" deflation\n");
       }
       break;
@@ -69,30 +70,31 @@ void startModule(Modules mod, bool moveInPositiveDir) {
 }
 
 void stopModule(Modules mod) {
+  // All relay pins are active low.
   switch (mod) {
     case Modules::Bell: {
       ModuleBellState.state = false;
-      digitalWrite(bellRelayControlPin, ModuleBellState.state);
+      digitalWrite(bellRelayControlPin, HIGH);
       DEBUG_PRINT("Bell module stopped\n");
       break;
     }
     case Modules::SpinWheel: {
       ModuleSpinWheelState.state = false;
-      digitalWrite(spinWheenRelayControlPin, ModuleSpinWheelState.state);
+      digitalWrite(spinWheenRelayControlPin, HIGH);
       DEBUG_PRINT("SpinWheel module stopped\n");
       break;
     }
     case Modules::Cart: {
       ModuleCartState.state = ModuleCartState.Stopped;
-      digitalWrite(cartForwardRelayControlPin, LOW);
-      digitalWrite(cartReverseRelayControlPin, LOW);
+      digitalWrite(cartForwardRelayControlPin, HIGH);
+      digitalWrite(cartReverseRelayControlPin, HIGH);
       DEBUG_PRINT("Cart module stopped\n");
       break;
     }
     case Modules::Balloon: {
       ModuleBalloonState.state = ModuleBalloonState.PressureHold;
-      digitalWrite(balloonInflateRelayControlPin, LOW);
-      digitalWrite(balloonDeflateRelayControlPin, LOW);
+      digitalWrite(balloonInflateRelayControlPin, HIGH);
+      digitalWrite(balloonDeflateRelayControlPin, HIGH);
       DEBUG_PRINT("Balloon module stopped\n");
       break;
     }

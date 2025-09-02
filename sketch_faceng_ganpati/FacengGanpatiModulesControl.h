@@ -14,6 +14,8 @@ enum Modules : uint8_t {
     Cart,
     Balloon,
     Automation,
+    EXTERNAL_MODULES_COUNT,
+    ColumnLEDs = EXTERNAL_MODULES_COUNT,
     Music, // Not exposed to user interface. Managed by Automation
     MODULES_COUNT,
 };
@@ -57,6 +59,11 @@ extern struct _ModuleAutomationState {
   // false == off; true == on;
   bool state;
 } ModuleAutomationState;
+
+extern struct _ModuleColumnLEDsState {
+  // false == off; true == on;
+  bool state;
+} ModuleColumnLEDsState;
 
 void startModule(Modules mod, bool moveInPositiveDir = true);
 void stopModule(Modules mod);

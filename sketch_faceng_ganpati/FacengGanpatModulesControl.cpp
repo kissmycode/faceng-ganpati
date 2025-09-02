@@ -11,6 +11,7 @@ _ModuleCartState ModuleCartState;
 _ModuleBalloonState ModuleBalloonState;
 _ModuleMusicState ModuleMusicState;
 _ModuleAutomationState ModuleAutomationState;
+_ModuleColumnLEDsState ModuleColumnLEDsState;
 
 void startModule(Modules mod, bool moveInPositiveDir) {
   // All relay pins are active low.
@@ -54,12 +55,23 @@ void startModule(Modules mod, bool moveInPositiveDir) {
       break;
     }
     case Modules::Music: {
-      DEBUG_PRINT("Music module started");
-      playAarti();
-      ModuleMusicState.state = true;
+      if (!ModuleMusicState.state) {
+        ModuleMusicState.state = true;
+        playAarti();
+        DEBUG_PRINT("Music module started\n");
+      } else {
+        DEBUG_PRINT("Music module was already started. Nothing to do.\n");
+      }
       break;
     }
     case Modules::Automation: {
+      break;
+    }
+    case Modules::ColumnLEDs:
+    {
+      ModuleColumnLEDsState.state = true;
+      digitalWrite(templeLightsLEDRelayControlPin, LOW);
+      DEBUG_PRINT("ColumnLEDs module started\n");
       break;
     }
     default: {
@@ -99,11 +111,23 @@ void stopModule(Modules mod) {
       break;
     }
     case Modules::Music: {
-      stopAarti();
-      ModuleMusicState.state = false;
+      if (ModuleMusicState.state) {
+        ModuleMusicState.state = false;
+        stopAarti();
+        DEBUG_PRINT("Music module stopped\n");
+      } else {
+        DEBUG_PRINT("Music module was already stopped. Nothing to do.\n");
+      }
       break;
     }
     case Modules::Automation: {
+      break;
+    }
+    case Modules::ColumnLEDs:
+    {
+      ModuleColumnLEDsState.state = false;
+      digitalWrite(templeLightsLEDRelayControlPin, HIGH);
+      DEBUG_PRINT("Column LEDs module stopped\n");
       break;
     }
     default: {
@@ -122,5 +146,5 @@ void stopAllPhysicalModules() {
   }
 }
 
-void playAarti() { if (wifiSetupSuccessful) wifiSendCmdOverUdp("play_aarti"); }
-void stopAarti() { if (wifiSetupSuccessful) wifiSendCmdOverUdp("stop_aarti"); }
+void playAarti() { if (wifiSetupSuccessful) wifiSendCmdOverUdpWithRetries("play_aarti"); }
+void stopAarti() { if (wifiSetupSuccessful) wifiSendCmdOverUdpWithRetries("stop_aarti"); }

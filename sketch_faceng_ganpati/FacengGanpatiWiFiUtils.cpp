@@ -9,7 +9,7 @@ int status = WL_IDLE_STATUS;
 
 
 // Local IP address and a port to listen on
-const char* macbook_ip = "192.168.31.152"; // <-- IMPORTANT: Fetch this if WiFi changes
+const char* macbook_ip = ""; // <-- IMPORTANT: Fetch this if WiFi changes
 const int macbook_port = 8888;
 
 // Create an instance of the UDP client
@@ -121,5 +121,29 @@ void wifiSendCmdOverUdp(String cmd) {
     DEBUG_PRINT("Command '%s' sent successfully.\n", cmd.c_str());
   } else {
     DEBUG_PRINT("Failed to send command '%s'.\n", cmd.c_str());
+  }
+}
+
+/**
+ * Sends a command multiple times to increase reliability.
+ * @param cmd The command string to send.
+ * @param retries The number of times to send the command.
+ * @param retry_delay_ms The delay in milliseconds between each attempt.
+ */
+void wifiSendCmdOverUdpWithRetries(String cmd, int retries, int retry_delay_ms) {
+  DEBUG_PRINT("Sending command '%s' with %d retries...\n", cmd.c_str(), retries);
+  for (int i = 0; i < retries; i++) {
+    // Begin the UDP packet
+    Udp.beginPacket(macbook_ip, macbook_port);
+    // Write the command string to the packet buffer
+    Udp.print(cmd);
+    // Send the packet
+    if (Udp.endPacket()) {
+      DEBUG_PRINT(" -> Sent attempt #%d\n", i + 1);
+    } else {
+      DEBUG_PRINT(" -> Failed attempt #%d\n", i + 1);
+    }
+    // Wait a short time before sending the next one
+    delay(retry_delay_ms);
   }
 }

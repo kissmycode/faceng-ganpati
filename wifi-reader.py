@@ -24,29 +24,51 @@ except Exception as e:
 
 try:
     aarti_found = False;
+    aarti_on = False;
     while True:
-        # Wait for a message to arrive
+        # 1. Wait for at least one command to arrive
         message, address = server_socket.recvfrom(1024)
         
-        # Decode the message from bytes to a string
-        command = message.decode('utf-8').strip()
-        
-        print(f"Received command '{command}' from {address}")
-        
-        if command == "play_aarti":
+        # 2. Quickly drain any other commands waiting in the buffer
+        commands = [message]
+        server_socket.setblocking(False)
+        while True:
             try:
-                # Find and play the track
-                for track in apple_music.tracks.get():
-                    if track.name.get() == "Sukhkarta_aarti":
-                        track.play()
-                        aarti_found = True
-                        print(f"Now playing: {track.name.get()}")
-                        break
-            except Exception as e:
-                print(f"Error playing track: {e}")
+                commands.append(server_socket.recvfrom(1024)[0])
+            except BlockingIOError:
+                break # Buffer is empty
+        server_socket.setblocking(True)
+
+        # 3. Decode and process ONLY the last command received
+        command = commands[-1].decode('utf-8').strip()
+        print(f"Drained {len(commands)} packets. Processing last command: '{command}'")
+
+        if command == "play_aarti":
+            if not aarti_on:
+                try:
+                    # Find and play the track
+                    for track in apple_music.tracks.get():
+                        if track.name.get() == "Sukhkarta_aarti":
+                            track.play()
+                            aarti_found = True
+                            aarti_on = True
+                            print(f"Now playing: {track.name.get()}")
+                            break
+                    if not aarti_found:
+                        print("Sukhakarta aarti not found")
+                        aarti_found = False
+                        aarti_on = False
+                except Exception as e:
+                    print(f"Error playing track: {e}")
+            else:
+                print("Aarti already on. Ignoring play command"); 
         elif command == "stop_aarti":
-            apple_music.stop();
-            print(f"Aarti stopped");
+            if aarti_on:
+                aarti_on = False
+                apple_music.stop()
+                print("Aarti stopped");
+            else:
+                print("Aarti already stopped. Ignoring stop command.")
 
 except KeyboardInterrupt:
     print("\nServer is shutting down.")

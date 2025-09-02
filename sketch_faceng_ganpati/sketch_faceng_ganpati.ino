@@ -49,11 +49,7 @@ void handleModuleIntr() {
   unsigned long currentTime = millis();
   if (currentTime - lastInterruptTime > intrDebounceDelay) {
     lastModule = selectedModule;
-    selectedModule = (++selectedModule % Modules::MODULES_COUNT);
-    // User can't interface directly with Music module, so skip that
-    if (selectedModule == Modules::Music) {
-      selectedModule = (++selectedModule % Modules::MODULES_COUNT);
-    }
+    selectedModule = (++selectedModule % Modules::EXTERNAL_MODULES_COUNT);
     lastInterruptTime = currentTime; // Update last interrupt time
   }
 }
@@ -99,9 +95,12 @@ void setup() {
     // Since relay input is active low, by default
     // our pins should be high. Hence first set to INPUT_PULLUP and then to OUTPUT
     // This ensures that default output remains HIGH
+    if (relayControlPins[i] == wifiOkLEDPin)
+      continue;
     pinMode(relayControlPins[i], INPUT_PULLUP);
     pinMode(relayControlPins[i], OUTPUT);
   }
+  pinMode(wifiOkLEDPin, OUTPUT);
 
   // Setup limit switch and module start/stop i/p pins
   for (int i = 0; i < numInputControlPins; i++) {
@@ -121,8 +120,6 @@ void setup() {
     digitalWrite(wifiOkLEDPin, LOW);
   }
 
-  // Turn on Boot-OK LED
-  digitalWrite(bootedOkLEDPin, HIGH);
   // Show on 7-seg display that we are ready to start
   writeNumberTo7SegDisplay(10);
   DEBUG_PRINT("Chip booted and setup done\n");
@@ -310,10 +307,15 @@ void loop() {
             stopModule(Modules::Balloon);
           }
 
-          // 2. SpinWheel
+          // 2a. SpinWheel
           if (!ModuleSpinWheelState.state) {
             startModule(Modules::SpinWheel);
             DEBUG_PRINT("Spinwheel module started. Current state of module %u\n", ModuleSpinWheelState.state);
+          }
+          // 2b. ColumnLEDs
+          if (!ModuleColumnLEDsState.state) {
+            startModule(Modules::ColumnLEDs);
+            DEBUG_PRINT("ColumnLEDs module started. Current state of module %u\n", ModuleColumnLEDsState.state);
           }
 
           // 3. Cart
